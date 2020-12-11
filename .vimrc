@@ -1,70 +1,112 @@
-"**************************************
-"     common configuration            *
-"**************************************
-
-" 关闭vim 一致性原则
 set nocompatible
+set enc=utf-8
+set fileencodings=utf-8,ucs-bom,gb18030,gb2312,gbk,big5,latin1
 
-" 设置文件编码为 utf-8
-set encoding=utf-8
+set nu!
+set ruler
+set nobackup
+set undofile
+set undodir=~/.cache/vimfiles/undodir
+if !isdirectory(&undodir)
+    call mkdir(&undodir, 'p', 0700)
+endif 
 
-" 设置tab 宽度
 set ts=4
-
-" 设置tab 自动转为空格
 set expandtab
-
-" 设置自动对齐的空格数
-set shiftwidth=4
-
-" 设置退格键可以直接删除tab 的4 个空格
 set smarttab
+set shiftwidth=4
 set softtabstop=4
 
-" 显示行号
-set nu
-
-" 设置在编辑过程中右下角显示行列信息
-set ruler
-
-" 设置历史记录行数
-set history=1000
-
-" 设置状态栏显示正在输入的命令
-set showcmd
-
-" 取消备份及禁止临时文件的生成
-set noswapfile
-set nobackup
-
-" 设置匹配模式
-set showmatch
-
-" 设置搜索是忽略大小写
-set ignorecase
-
-" 配置C 系列语言的对齐方式
-set cindent
 set autoindent
+set cindent
 
-" 开启语法高亮
 syntax enable
 syntax on
+filetype off
 
-" 指定配色方案为256
 set t_Co=256
+colorscheme molokai
 
-" 自动判断编码的顺序
-set fileencodings=utf-8,ucs-bom,gb18030,gb2312,big5,latin1
 
-" 检查文件类型
-filetype on
+" Vundle manage
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
 
-" 根据不同文件类型采取不同缩进
-filetype indent on
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'majutsushi/tagbar'
+Plugin 'scrooloose/nerdtree'
+Plugin 'w0rp/ale'
+Plugin 'Valloric/YouCompleteMe'
+Plugin 'ludovicchabant/vim-gutentags'
+Plugin 'flazz/vim-colorschemes'
 
-" 允许插件
-filetype plugin on
-
-" 启动智能补全
+call vundle#end()
 filetype plugin indent on
+
+
+" cscope: F5 search C token, F6 search string, F7 search function called
+if has("cscope")
+	set csprg=/usr/bin/cscope
+	set csto=1
+	set cst
+	set nocsverb
+
+	if filereadable("cscope.out")
+		cs add cscope.out
+	endif
+
+	set csverb
+endif
+
+nmap <silent> <F5> :cs find s <C-R>=expand("<cword>")<CR><CR>
+nmap <silent> <F6> :cs find t <C-R>=expand("<cword>")<CR><CR>
+nmap <silent> <F7> :cs find c <C-R>=expand("<cword>")<CR><CR>
+
+
+" Tagbar: auto open tagbar
+let g:tagbar_width=25
+autocmd BufReadPost *.cpp,*.c,*.h,*.cc,*.cxx call tagbar#autoopen()
+
+
+" NERDTree 
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+let NERDTreeWinSize=25
+let NERDTreeShowLineNumbers=1
+let NERDTreeAutoCenter=1
+let NERDTreeShowBookmarks=1
+map <F3> :NERDTreeMirror<CR>
+map <F3> :NERDTreeToggle<CR>
+
+
+" ALE
+let g:ale_sign_column_always=1
+let g:ale_sign_error='×'
+let g:ale_sign_warning='w'
+let g:ale_statusline_format=['w %d', '! %d', '√ OK']
+let g:ale_echo_msg_format='[%linter%] %code: %%s'
+let g:ale_lint_on_text_changed='normal'
+let g:ale_lint_on_insert_leave=1
+let g:ale_c_gcc_options='-Wall -O2 -std=c99'
+let g:ale_cpp_gcc_options='-Wall -O2 -std=c++17'
+let g:ale_c_cppcheck_options=''
+let g:ale_cpp_cppcheck_options=''
+
+
+" YouCompleteMe
+let g:ycm_server_python_interpreter='/usr/bin/python3'
+let g:ycm_global_ycm_extra_conf='~/.vim/.ycm_extra_conf.py'
+
+
+" vim-gutentags
+let g:gutentags_project_root=['.root', '.git', '.svn', '.hg', '.project', '.idea', '.vscode']
+let g:gutentags_ctags_tagfile = '.tags'
+let s:vim_tags = expand('~/.cache/vimfiles/tags')
+let g:gutentags_cache_dir = s:vim_tags
+if !isdirectory(s:vim_tags)
+   silent! call mkdir(s:vim_tags, 'p')
+endif
+let g:gutentags_ctags_extra_args=['--fields=+niazS', '--extra=+q']
+let g:gutentags_ctags_extra_args+=['--c++-kinds=+px']
+let g:gutentags_ctags_extra_args+=['--c-kinds=+px']
+
